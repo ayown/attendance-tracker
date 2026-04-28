@@ -25,6 +25,8 @@
     "typescript": "6.0.3",
     "prettier": "3.8.3",
     "eslint": "10.2.1",
+    "@eslint/js": "10.0.1",
+    "@eslint/eslintrc": "3.3.5",
     "husky": "9.1.7",
     "lint-staged": "^16.0.0",
     "@types/node": "25.6.0"
