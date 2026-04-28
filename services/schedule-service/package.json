@@ -12,9 +12,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@attendance-tracker/shared-types": "*",
-    "@attendance-tracker/config": "*",
-    "@attendance-tracker/utils": "*",
+    "@attendance-tracker/shared-types": "workspace:*",
+    "@attendance-tracker/config": "workspace:*",
+    "@attendance-tracker/utils": "workspace:*",
     "express": "5.2.1",
     "cors": "^2.8.5",
     "helmet": "^8.0.0",

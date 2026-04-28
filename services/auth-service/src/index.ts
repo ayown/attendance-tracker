@@ -19,17 +19,10 @@ app.use(morgan('dev'));
 app.use('/health', healthRouter);
 app.use('/api/auth', authRouter);
 
-app.use(
-  (
-    err: Error,
-    _req: express.Request,
-    res: express.Response,
-    _next: express.NextFunction
-  ) => {
-    console.error(err.stack);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
-  }
-);
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ success: false, error: 'Internal Server Error' });
+});
 
 app.listen(PORT, () => {
   console.info(`[auth-service] running on port ${PORT} — v${APP_VERSION}`);

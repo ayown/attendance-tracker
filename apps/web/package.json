@@ -10,9 +10,9 @@
     "clean": "rm -rf .next out"
   },
   "dependencies": {
-    "@attendance-tracker/shared-types": "*",
-    "@attendance-tracker/config": "*",
-    "@attendance-tracker/utils": "*",
+    "@attendance-tracker/shared-types": "workspace:*",
+    "@attendance-tracker/config": "workspace:*",
+    "@attendance-tracker/utils": "workspace:*",
     "next": "16.2.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

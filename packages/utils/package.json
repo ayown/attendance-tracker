@@ -18,8 +18,8 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@attendance-tracker/shared-types": "*",
-    "@attendance-tracker/config": "*"
+    "@attendance-tracker/shared-types": "workspace:*",
+    "@attendance-tracker/config": "workspace:*"
   },
   "devDependencies": {
     "typescript": "6.0.3",

@@ -1,26 +1,33 @@
-import Link from 'next/link';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { Role } from '@attendance-tracker/shared-types';
+
+const ROLE_REDIRECT: Record<Role, string> = {
+  [Role.SUPER_ADMIN]: '/super-admin',
+  [Role.ADMIN]: '/admin',
+  [Role.MENTOR]: '/mentor',
+  [Role.STUDENT]: '/student',
+};
 
 export default function HomePage() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (isAuthenticated && user) {
+      router.replace(ROLE_REDIRECT[user.role]);
+    } else {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isLoading, user, router]);
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[#FAF7F2]">
-      <div className="text-center space-y-6 p-8">
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-[#FF6B00] flex items-center justify-center">
-            <span className="text-white font-bold text-xl">A</span>
-          </div>
-          <h1 className="text-4xl font-bold text-[#121212]">Attendance Tracker</h1>
-        </div>
-        <p className="text-[#6B7280] text-lg max-w-md">
-          All-in-one college attendance tracking system with dynamic QR codes and intelligent
-          scheduling.
-        </p>
-        <Link
-          href="/login"
-          className="inline-block px-8 py-3 bg-[#FF6B00] text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors"
-        >
-          Sign In
-        </Link>
-      </div>
-    </main>
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+      <div className="w-8 h-8 border-4 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
+    </div>
   );
 }

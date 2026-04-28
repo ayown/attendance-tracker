@@ -1,34 +1,32 @@
+import { LoginForm } from '@/components/auth/LoginForm';
+
+export const metadata = { title: 'Sign In — Attendance Tracker' };
+
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg border border-[#F5F5F5]">
+    <main className="min-h-screen flex items-center justify-center bg-[#FAF7F2] px-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#FF6B00] flex items-center justify-center">
-            <span className="text-white font-bold text-lg">A</span>
+          <div className="w-11 h-11 rounded-xl bg-[#FF6B00] flex items-center justify-center shadow-lg shadow-orange-200">
+            <span className="text-white font-bold text-xl">A</span>
           </div>
-          <h1 className="text-2xl font-bold text-[#121212]">Sign In</h1>
+          <div>
+            <h1 className="text-xl font-bold text-[#121212]">Attendance Tracker</h1>
+            <p className="text-xs text-[#6B7280]">College management system</p>
+          </div>
         </div>
-        <p className="text-[#6B7280] mb-6 text-sm">
-          Login form — Phase 2 implementation
+
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-xl shadow-black/5 border border-gray-100 p-8">
+          <h2 className="text-2xl font-bold text-[#121212] mb-1">Welcome back</h2>
+          <p className="text-[#6B7280] text-sm mb-6">Sign in to your account to continue</p>
+          <LoginForm />
+        </div>
+
+        <p className="text-center text-xs text-[#6B7280] mt-6">
+          Access is managed by your institution administrator.
         </p>
-        <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email address"
-            className="w-full px-4 py-3 border border-[#F5F5F5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00] bg-[#FAF7F2]"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-3 border border-[#F5F5F5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00] bg-[#FAF7F2]"
-          />
-          <button
-            type="button"
-            className="w-full py-3 bg-[#FF6B00] text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors"
-          >
-            Sign In
-          </button>
-        </div>
       </div>
     </main>
   );
