@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MENTOR
+  STUDENT
+}
+
+enum Shift {
+  MORNING
+  AFTERNOON
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum AttendanceMethod {
+  QR_SCAN
+  MANUAL_CODE
+  ADMIN_OVERRIDE
+}
+
+enum CodeType {
+  QR_CODE
+  MANUAL_CODE
+}
+
+// ─── Users & Auth ─────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(STUDENT)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile Student?
+  mentorProfile  Mentor?
+  adminProfile   Admin?
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─── Cohorts & Admins ─────────────────────────────────────────────────────────
+
+model Cohort {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admins   Admin[]
+  batches  Batch[]
+  students Student[]
+  mentors  Mentor[]
+
+  @@map("cohorts")
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  userId   String @unique
+  cohortId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("admins")
+}
+
+// ─── Students & Batches ───────────────────────────────────────────────────────
+
+model Student {
+  id       String  @id @default(uuid())
+  userId   String  @unique
+  regno    String  @unique
+  shift    Shift
+  batchId  String?
+  cohortId String
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batch      Batch?       @relation(fields: [batchId], references: [id])
+  cohort     Cohort       @relation(fields: [cohortId], references: [id])
+  attendance Attendance[]
+  codes      AttendanceCode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cohortId])
+  @@index([batchId])
+  @@map("students")
+}
+
+model Batch {
+  id       String @id @default(uuid())
+  name     String
+  cohortId String
+
+  cohort    Cohort     @relation(fields: [cohortId], references: [id])
+  students  Student[]
+  schedules Schedule[]
+
+  createdAt DateTime @default(now())
+
+  @@map("batches")
+}
+
+// ─── Mentors ──────────────────────────────────────────────────────────────────
+
+model Mentor {
+  id       String @id @default(uuid())
+  userId   String @unique
+  cohortId String
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohort    Cohort     @relation(fields: [cohortId], references: [id])
+  schedules Schedule[]
+
+  createdAt DateTime @default(now())
+
+  @@map("mentors")
+}
+
+// ─── Schedules ────────────────────────────────────────────────────────────────
+
+model Schedule {
+  id        String    @id @default(uuid())
+  batchId   String
+  dayOfWeek DayOfWeek
+  period    Int
+  shift     Shift
+  startTime String
+  endTime   String
+  mentorId  String?
+
+  batch      Batch        @relation(fields: [batchId], references: [id])
+  mentor     Mentor?      @relation(fields: [mentorId], references: [id])
+  attendance Attendance[]
+  codes      AttendanceCode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([batchId, dayOfWeek, period])
+  @@index([batchId, dayOfWeek])
+  @@map("schedules")
+}
+
+// ─── Attendance ───────────────────────────────────────────────────────────────
+
+model Attendance {
+  id         String           @id @default(uuid())
+  studentId  String
+  scheduleId String
+  status     AttendanceStatus
+  markedBy   String
+  method     AttendanceMethod
+  codeId     String?
+  remarks    String?
+
+  student  Student  @relation(fields: [studentId], references: [id])
+  schedule Schedule @relation(fields: [scheduleId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, scheduleId])
+  @@index([scheduleId, status])
+  @@index([studentId])
+  @@map("attendance")
+}
+
+model AttendanceCode {
+  id         String   @id @default(uuid())
+  studentId  String
+  scheduleId String
+  code       String   @unique
+  qrData     String
+  codeType   CodeType
+  expiresAt  DateTime
+  isUsed     Boolean  @default(false)
+  usedAt     DateTime?
+
+  student  Student  @relation(fields: [studentId], references: [id])
+  schedule Schedule @relation(fields: [scheduleId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([code])
+  @@index([studentId, scheduleId, createdAt])
+  @@map("attendance_codes")
+}

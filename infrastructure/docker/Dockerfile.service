@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1
+ARG SERVICE_NAME
+
+FROM node:24-alpine AS base
+WORKDIR /app
+RUN apk add --no-cache libc6-compat curl
+
+# ── Install dependencies ──────────────────────────────────────────────────────
+FROM base AS deps
+COPY package.json package-lock.json* ./
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/config/package.json ./packages/config/
+COPY packages/utils/package.json ./packages/utils/
+ARG SERVICE_NAME
+COPY services/${SERVICE_NAME}/package.json ./services/${SERVICE_NAME}/
+RUN npm ci --workspace=packages/shared-types \
+           --workspace=packages/config \
+           --workspace=packages/utils \
+           --workspace=services/${SERVICE_NAME}
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+FROM deps AS builder
+COPY packages/ ./packages/
+ARG SERVICE_NAME
+COPY services/${SERVICE_NAME}/ ./services/${SERVICE_NAME}/
+RUN npm run build --workspace=packages/shared-types && \
+    npm run build --workspace=packages/config && \
+    npm run build --workspace=packages/utils && \
+    npm run build --workspace=services/${SERVICE_NAME}
+
+# ── Production image ──────────────────────────────────────────────────────────
+FROM base AS runner
+ENV NODE_ENV=production
+ARG SERVICE_NAME
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+COPY --from=builder /app/packages/shared-types/dist ./packages/shared-types/dist
+COPY --from=builder /app/packages/config/dist ./packages/config/dist
+COPY --from=builder /app/packages/utils/dist ./packages/utils/dist
+COPY --from=builder /app/services/${SERVICE_NAME}/dist ./services/${SERVICE_NAME}/dist
+COPY --from=deps /app/node_modules ./node_modules
+
+CMD node services/${SERVICE_NAME}/dist/index.js
